@@ -1,7 +1,7 @@
 {
   "name": "Nuvio",
-  "version": "2.0.0",
-  "description": "Nuvio plugin repository with Streamline providers plus PinoyMoviesHub.",
+  "version": "2.2.0",
+  "description": "Nuvio provider collection with Streamline and NVV-compatible providers.",
   "author": "xrexzerox",
   "scrapers": [
     {
@@ -520,23 +520,338 @@
     {
       "id": "pinoymovieshub",
       "name": "PinoyMoviesHub",
-      "description": "PinoyMoviesHub catalog and public source-link scraper",
+      "description": "NVV-compatible provider",
       "version": "1.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/pinoymovieshub.js",
+      "filename": "providers/pinoyhub.js",
       "enabled": true,
-      "hasSettings": false,
       "formats": [
         "mp4",
         "m3u8",
-        "mkv"
+        "webm"
       ],
       "contentLanguage": [
         "tl",
+        "fil",
+        "en"
+      ]
+    },
+    {
+      "id": "animotvslash",
+      "name": "ANIMOTVSLASH",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/animotvslash.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ja"
+      ]
+    },
+    {
+      "id": "animepahe",
+      "name": "AnimePahe",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/animepahe.js",
+      "enabled": true,
+      "formats": [
+        "m3u8"
+      ],
+      "contentLanguage": [
+        "en",
+        "ja"
+      ]
+    },
+    {
+      "id": "cinemacity",
+      "name": "CinemaCity",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/cinemacity.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ja"
+      ]
+    },
+    {
+      "id": "4khdhub",
+      "name": "4KHDHub",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/4khdhub.js",
+      "enabled": true,
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ta",
+        "te",
+        "tl"
+      ]
+    },
+    {
+      "id": "kisskh",
+      "name": "KissKH",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/kisskh.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ko",
+        "ja",
+        "zh"
+      ]
+    },
+    {
+      "id": "okru",
+      "name": "OK.ru",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/okru.js",
+      "enabled": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "contentLanguage": [
+        "ru",
+        "en"
+      ]
+    },
+    {
+      "id": "castle",
+      "name": "Castle",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/castle.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "dooflix",
+      "name": "DooFlix",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/dooflix.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "dvdplay",
+      "name": "DVDPlay",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/dvdplay.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "hdhub4u",
+      "name": "HDHub4u",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/hdhub4u.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4",
+        "mkv"
+      ],
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "mallumv",
+      "name": "MallumV",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/mallumv.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ml"
+      ]
+    },
+    {
+      "id": "movieblast",
+      "name": "MovieBlast",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/movieblast.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "mycima",
+      "name": "MyCima",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/mycima.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ar"
+      ]
+    },
+    {
+      "id": "netmirror",
+      "name": "NetMirror",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/netmirror.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "myflixer",
+      "name": "MyFlixer",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/myflixer-extractor.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
         "en"
       ]
     }
