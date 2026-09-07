@@ -1,0 +1,16 @@
+{
+  "name": "pinoymovieshub-nuvio",
+  "version": "1.0.0",
+  "description": "Streamline-style Nuvio provider repository for PinoyMoviesHub.",
+  "scripts": {
+    "build": "node build.js",
+    "build:provider": "node build.js pinoymovieshub"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  },
+  "dependencies": {
+    "cheerio-without-node-native": "^0.20.2",
+    "crypto-js": "^4.2.0"
+  }
+}
