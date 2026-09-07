@@ -1,33 +1,32 @@
 /**
- * PinoyMoviesHub Nuvio Plugin - Simple Edition
+ * PinoyMoviesHub Nuvio Plugin - Nuvio-compatible embed handling
  * Domain: pinoymovieshub.win
  * Supports: Movies & TV Shows
- * Language: Filipino / Tagalog / English
- * Author: Enhanced by AI
- * Version: 4.0.0
+ *
+ * Embed pages are NOT native media URLs. NuvioMobile's current StreamItem
+ * contract sends `url` to the native player, while `externalUrl` is opened
+ * externally when `url` is absent. Therefore this provider returns direct
+ * media URLs only when the source actually exposes one; otherwise it uses
+ * externalUrl for the public embed page instead of passing the webpage to
+ * Media3.
  */
 
 var cheerio = require("cheerio-without-node-native");
-
 var PROVIDER_NAME = "PinoyMoviesHub";
 var TMDB_API_KEY = "439c478a771f35c05022f9feabcca01c";
 var BASE_URL = "https://pinoymovieshub.win";
 
 var HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
   "Accept-Language": "en-US,en;q=0.9",
-  "Referer": BASE_URL,
-  "Cookie": "starstruck_7da72d90b632af60dd1158c068193d61=99f22538d0588cdd7ccfc783299f88a7"
+  "Referer": BASE_URL + "/"
 };
 
-// ===== UTILITY FUNCTIONS =====
-
-function merge(obj1, obj2) {
-  var out = {};
-  var k;
-  for (k in obj1 || {}) out[k] = obj1[k];
-  for (k in obj2 || {}) out[k] = obj2[k];
+function merge(a, b) {
+  var out = {}, k;
+  for (k in a || {}) out[k] = a[k];
+  for (k in b || {}) out[k] = b[k];
   return out;
 }
 
@@ -37,8 +36,9 @@ function fetchText(url, options) {
     method: options.method || "GET",
     redirect: options.redirect || "follow",
     headers: merge(HEADERS, options.headers || {}),
-    body: options.body
-  }).then(function(res) {
+    body: options.body,
+    skipSizeCheck: true
+  }).then(function (res) {
     if (!res.ok) throw new Error("HTTP " + res.status);
     return res.text();
   });
@@ -50,11 +50,12 @@ function fetchJson(url, options) {
     method: options.method || "GET",
     redirect: options.redirect || "follow",
     headers: merge(HEADERS, options.headers || {}),
-    body: options.body
-  }).then(function(res) {
-    if (!res.ok) return null;
+    body: options.body,
+    skipSizeCheck: true
+  }).then(function (res) {
+    if (!res.ok) throw new Error("HTTP " + res.status);
     return res.json();
-  }).catch(function() { return null; });
+  });
 }
 
 function slugify(title) {
@@ -66,327 +67,187 @@ function slugify(title) {
 }
 
 function parseQuality(text) {
-  var value = String(text || "").toLowerCase();
-  var m = value.match(/\b(2160p|1440p|1080p|720p|480p|360p|4k|uhd|hd|sd|cam)\b/);
-  if (m) {
-    var q = m[1];
-    if (q === "4k" || q === "uhd") return "2160p";
-    if (q === "hd") return "720p";
-    if (q === "sd") return "480p";
-    if (q === "cam") return "CAM";
-    return q;
-  }
-  return "Auto";
+  var m = String(text || "").match(/\b(2160p|1440p|1080p|720p|480p|360p|4k|uhd|hd|sd|cam)\b/i);
+  if (!m) return "Auto";
+  var q = m[1].toLowerCase();
+  if (q === "4k" || q === "uhd") return "2160p";
+  if (q === "hd") return "720p";
+  if (q === "sd") return "480p";
+  if (q === "cam") return "CAM";
+  return q;
 }
 
 function inferLang(text) {
   var t = String(text || "").toLowerCase();
-  if (t.indexOf("tagalog") !== -1 || t.indexOf("filipino") !== -1) return "Tagalog";
-  if (t.indexOf("english") !== -1 || /\beng\b/.test(t)) return "English";
-  if (t.indexOf("spanish") !== -1) return "Spanish";
-  if (t.indexOf("korean") !== -1) return "Korean";
-  if (t.indexOf("japanese") !== -1) return "Japanese";
-  if (t.indexOf("chinese") !== -1) return "Chinese";
-  if (t.indexOf("hindi") !== -1) return "Hindi";
+  if (t.indexOf("tagalog") >= 0 || t.indexOf("filipino") >= 0) return "Tagalog";
+  if (t.indexOf("english") >= 0 || /\beng\b/.test(t)) return "English";
   return "Tagalog";
 }
 
-// ===== TMDB AUTO-DETECT (same logic as KissKH) =====
-
-function getTmdbInfoAuto(tmdbId) {
-    var movieUrl = "https://api.themoviedb.org/3/movie/" + tmdbId + "?api_key=" + TMDB_API_KEY;
-    return fetchJson(movieUrl).then(function(data) {
-        var title = data.title || "";
-        var original = data.original_title || title;
-        var year = (data.release_date || "").split("-")[0];
-        return {
-            type: "movie",
-            title: title,
-            original: original,
-            year: year,
-            raw: data
-        };
-    }).catch(function() {
-        var tvUrl = "https://api.themoviedb.org/3/tv/" + tmdbId + "?api_key=" + TMDB_API_KEY;
-        return fetchJson(tvUrl).then(function(data) {
-            var title = data.name || "";
-            var original = data.original_name || title;
-            var year = (data.first_air_date || "").split("-")[0];
-            return {
-                type: "tv",
-                title: title,
-                original: original,
-                year: year,
-                raw: data
-            };
-        });
-    }).catch(function() {
-        return { type: "", title: "", original: "", year: "", raw: null };
+function getTmdbInfo(tmdbId, forceTv) {
+  var url;
+  if (forceTv) {
+    url = "https://api.themoviedb.org/3/tv/" + tmdbId + "?api_key=" + TMDB_API_KEY;
+    return fetchJson(url).then(function (d) {
+      return { type: "tv", title: d.name || "", year: (d.first_air_date || "").split("-")[0] };
     });
+  }
+  url = "https://api.themoviedb.org/3/movie/" + tmdbId + "?api_key=" + TMDB_API_KEY;
+  return fetchJson(url).then(function (d) {
+    return { type: "movie", title: d.title || "", year: (d.release_date || "").split("-")[0] };
+  }).catch(function () {
+    return getTmdbInfo(tmdbId, true);
+  });
 }
 
-function getTmdbEpisodeTitle(tmdbId, season, episode) {
-    if (!season || !episode) return Promise.resolve("");
-    var url = "https://api.themoviedb.org/3/tv/" + tmdbId + "/season/" + season + "/episode/" + episode + "?api_key=" + TMDB_API_KEY;
-    return fetchJson(url).then(function(data) {
-        return data.name || "";
-    }).catch(function() {
-        return "";
-    });
+function getEpisodeTitle(tmdbId, season, episode) {
+  if (!season || !episode) return Promise.resolve("");
+  return fetchJson("https://api.themoviedb.org/3/tv/" + tmdbId + "/season/" + season + "/episode/" + episode + "?api_key=" + TMDB_API_KEY)
+    .then(function (d) { return d.name || ""; })
+    .catch(function () { return ""; });
 }
-
-// ===== DOOPLAYER API =====
 
 function extractPlayerData(html) {
   var $ = cheerio.load(html);
   var players = [];
+  var seen = {};
 
-  // Look for dooplayer elements with data attributes
-  $("[data-post][data-type][data-source], [data-post][data-type], #dooplay_player, .dooplay_player, .dooplay_player_response").each(function(_, el) {
+  $("[data-post][data-type][data-source], [data-post][data-type], #dooplay_player, .dooplay_player, .dooplay_player_response").each(function (_, el) {
     var postId = $(el).attr("data-post") || $(el).attr("data-id");
-    var type = $(el).attr("data-type") || "movie";
+    if (!postId) return;
     var source = $(el).attr("data-source") || $(el).attr("data-nume") || "1";
-    var nonce = $(el).attr("data-nonce") || "";
-
-    if (postId) {
-      players.push({
-        postId: postId,
-        type: type,
-        source: source,
-        nonce: nonce
-      });
+    var type = $(el).attr("data-type") || "movie";
+    var key = postId + "|" + type + "|" + source;
+    if (!seen[key]) {
+      seen[key] = 1;
+      players.push({ postId: postId, type: type, source: source });
     }
   });
 
-  // Also look in scripts for dooplayer initialization
-  var scripts = $("script").map(function(_, el) { return $(el).html() || ""; }).get();
-  var i;
-  for (i = 0; i < scripts.length; i++) {
-    var script = scripts[i];
-    var postMatch = script.match(/data-post[=:]\s*["'](\d+)["']/);
-    var typeMatch = script.match(/data-type[=:]\s*["']([^"']+)["']/);
-    var sourceMatch = script.match(/data-source[=:]\s*["']([^"']+)["']/);
-    var nonceMatch = script.match(/data-nonce[=:]\s*["']([^"']+)["']/);
-
-    if (postMatch) {
-      players.push({
-        postId: postMatch[1],
-        type: typeMatch ? typeMatch[1] : "movie",
-        source: sourceMatch ? sourceMatch[1] : "1",
-        nonce: nonceMatch ? nonceMatch[1] : ""
-      });
-    }
-  }
-
-  // Deduplicate by postId+source
-  var seen = {};
-  var unique = [];
-  for (i = 0; i < players.length; i++) {
-    var key = players[i].postId + "-" + players[i].source;
-    if (!seen[key]) {
-      seen[key] = 1;
-      unique.push(players[i]);
-    }
-  }
-
-  console.log("[PinoyMoviesHub] Found", unique.length, "player(s)");
-  return unique;
+  return players;
 }
 
-function callDooPlayerAPI(playerData) {
-  var apiUrl = BASE_URL + "/wp-json/dooplayer/v2/" + playerData.postId + "/" + playerData.type + "/" + playerData.source;
-  console.log("[PinoyMoviesHub] Calling Dooplayer API:", apiUrl);
+function getEmbedUrl(player) {
+  var apiUrl = BASE_URL + "/wp-json/dooplayer/v2/" + player.postId + "/" + player.type + "/" + player.source;
+  return fetchJson(apiUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } }).then(function (data) {
+    if (!data) return null;
 
-  return fetchJson(apiUrl, {
-    headers: merge(HEADERS, {
-      "X-Requested-With": "XMLHttpRequest"
-    })
-  }).then(function(data) {
-    if (!data) {
-      console.log("[PinoyMoviesHub] Dooplayer API returned null");
-      return null;
-    }
-    console.log("[PinoyMoviesHub] Dooplayer API response keys:", Object.keys(data || {}).join(", "));
-
-    var embedUrl = data.embed_url || data.url || data.source || data.link || data.file || data.src;
-    if (embedUrl) {
-      console.log("[PinoyMoviesHub] Dooplayer embed URL:", embedUrl);
-      return embedUrl;
-    }
+    var candidates = [];
+    function add(v) { if (typeof v === "string" && v.trim()) candidates.push(v.trim()); }
+    add(data.embed_url);
+    add(data.url);
+    add(data.source);
+    add(data.link);
+    add(data.file);
+    add(data.src);
 
     if (data.data) {
-      embedUrl = data.data.embed_url || data.data.url || data.data.source || data.data.link || data.data.file || data.data.src;
-      if (embedUrl) {
-        console.log("[PinoyMoviesHub] Dooplayer nested embed URL:", embedUrl);
-        return embedUrl;
-      }
+      add(data.data.embed_url);
+      add(data.data.url);
+      add(data.data.source);
+      add(data.data.link);
+      add(data.data.file);
+      add(data.data.src);
     }
 
     var html = data.html || data.iframe || data.embed || data.player;
-    if (html && typeof html === "string") {
-      var iframeMatch = html.match(/src=["']([^"']+)["']/);
-      if (iframeMatch && iframeMatch[1]) {
-        console.log("[PinoyMoviesHub] Dooplayer iframe src:", iframeMatch[1]);
-        return iframeMatch[1];
-      }
+    if (typeof html === "string") {
+      var m = html.match(/<iframe[^>]+src=["']([^"']+)["']/i) || html.match(/src=["']([^"']+)["']/i);
+      if (m) add(m[1]);
     }
 
-    console.log("[PinoyMoviesHub] Dooplayer API response:", JSON.stringify(data).substring(0, 200));
-    return null;
-  }).catch(function(e) {
-    console.log("[PinoyMoviesHub] Dooplayer API error:", e.message);
-    return null;
-  });
+    return candidates.length ? candidates[0] : null;
+  }).catch(function () { return null; });
 }
 
-// ===== STREAM BUILDER =====
+function isDirectMedia(url) {
+  return /\.(m3u8|mp4|mkv|webm|mov|avi)(?:[?#]|$)/i.test(String(url || ""));
+}
 
-function buildStream(name, url, quality, language, displayTitle, meta) {
-  var lang = inferLang(language);
-  var isSeries = !!(meta && meta.season);
-  var host = "";
-  try { host = new URL(url).hostname.replace(/^www\./, "").replace(/\.com$/, "").replace(/\.top$/, "").replace(/\.click$/, ""); } catch(e) {}
+function makeStream(url, displayTitle, season, episode, episodeTitle) {
+  if (!url) return null;
+  var lang = inferLang(displayTitle);
+  var direct = isDirectMedia(url);
+  var title = displayTitle;
+  if (season && episode) title += " S" + season + "E" + episode + (episodeTitle ? " - " + episodeTitle : "");
 
-  // Detect if this is an embed URL (not a direct video file)
-  var isEmbed = !/\.(m3u8|mp4|mkv|webm|avi|mov)(\?|#|$)/i.test(url);
-  var q = isEmbed ? "Browser" : parseQuality(quality + " " + language);
-
-  var line1, line2;
-  if (isSeries) {
-    var epPart = meta.episodeTitle ? " - " + meta.episodeTitle : "";
-    line1 = "S" + meta.season + "E" + meta.episode + epPart + " | " + displayTitle;
-  } else {
-    line1 = displayTitle;
+  if (direct) {
+    return {
+      name: PROVIDER_NAME,
+      title: title + " | " + parseQuality(displayTitle) + " | " + lang,
+      url: url,
+      quality: parseQuality(displayTitle),
+      provider: "pinoymovieshub",
+      headers: { Referer: BASE_URL + "/" }
+    };
   }
 
-  if (isEmbed) {
-    line2 = "Browser | " + lang + (host ? " | " + host : "");
-  } else {
-    line2 = q + " | " + lang + (host ? " | " + host : "");
-  }
-
+  // NuvioMobile's external URL path is the correct contract for an ordinary
+  // public webpage/embed. Do not pass the HTML page to Media3 as `url`.
   return {
-    name: "PinoyMoviesHub" + (isEmbed ? " | " + lang + " | (Embed)" : " | " + q + " | " + lang),
-    title: line1 + "\n" + line2,
-    url: url,
-    quality: q,
-    headers: { Referer: BASE_URL },
+    name: PROVIDER_NAME + " | Embed",
+    title: title + " | Browser Embed | " + lang,
+    externalUrl: url,
     provider: "pinoymovieshub",
     behaviorHints: {
-      bingeGroup: "pinoymovieshub-" + (isEmbed ? "embed" : q.toLowerCase()),
-      notWebReady: isEmbed
+      bingeGroup: "pinoymovieshub-embed"
     }
   };
 }
 
-// ===== MAIN ENTRY =====
-
 function getStreams(tmdbId, season, episode) {
-    // Backward compatibility: old signature was getStreams(tmdbId, mediaType, seasonNum, episodeNum)
-    var mediaType = null;
-    if (season === "movie" || season === "tv") {
-        mediaType = season;
-        season = episode;
-        episode = arguments[3];
-        console.log("[PinoyMoviesHub] Detected old signature (mediaType=" + mediaType + "), remapped to season=" + season + " episode=" + episode);
-    }
+  // Supports both Nuvio's current 3/4-argument calls:
+  // getStreams(tmdbId, season, episode)
+  // getStreams(tmdbId, mediaType, season, episode)
+  var mediaType = null;
+  if (season === "movie" || season === "tv") {
+    mediaType = season;
+    season = episode;
+    episode = arguments[3];
+  }
 
-    var seasonStr = season || "";
-    var episodeStr = episode || "";
-    console.log("[PinoyMoviesHub] === START for TMDB ID:" + tmdbId + " S" + seasonStr + "E" + episodeStr + " ===");
+  var forceTv = !!(mediaType === "tv" || (season && episode));
 
-    // If season and episode are provided, force TV mode (avoids TMDB ID namespace collision)
-    var forceTv = !!(season && episode);
+  return getTmdbInfo(tmdbId, forceTv).then(function (tmdb) {
+    if (!tmdb || !tmdb.title) return [];
+    if (tmdb.type === "tv" && (!season || !episode)) return [];
 
-    var tmdbPromise = forceTv
-        ? fetchJson("https://api.themoviedb.org/3/tv/" + tmdbId + "?api_key=" + TMDB_API_KEY).then(function(data) {
-            var title = data.name || "";
-            var original = data.original_name || title;
-            var year = (data.first_air_date || "").split("-")[0];
-            return { type: "tv", title: title, original: original, year: year, raw: data };
-        }).catch(function() {
-            return { type: "", title: "", original: "", year: "", raw: null };
-        })
-        : getTmdbInfoAuto(tmdbId);
+    return getEpisodeTitle(tmdbId, season, episode).then(function (episodeTitle) {
+      var slug = slugify(tmdb.title);
+      var pageUrl;
 
-    return tmdbPromise.then(function(tmdbData) {
-        if (!tmdbData.type) {
-            console.log("[PinoyMoviesHub] Could not detect media type for TMDB ID: " + tmdbId);
-            return [];
-        }
-        var mediaType = tmdbData.type;
-        console.log("[PinoyMoviesHub] Detected type: " + mediaType + " | Title: " + tmdbData.title + " | Year: " + tmdbData.year);
+      if (tmdb.type === "movie") {
+        pageUrl = BASE_URL + "/movies/" + slug + "/";
+      } else {
+        pageUrl = BASE_URL + "/episodes/" + slug + "-" + season + "x" + episode + "/";
+      }
 
-        if (mediaType === "tv" && (!season || !episode)) {
-            console.log("[PinoyMoviesHub] TV show requires season and episode parameters");
-            return [];
-        }
+      return fetchText(pageUrl).then(function (html) {
+        var players = extractPlayerData(html);
+        if (!players.length) return [];
 
-        var epPromise = (mediaType === "tv")
-            ? getTmdbEpisodeTitle(tmdbId, season, episode)
-            : Promise.resolve("");
-
-        return epPromise.then(function(episodeTitle) {
-            var title = tmdbData.title;
-            var slug = slugify(title);
-            var pageUrl, displayTitle;
-
-            if (mediaType === "movie") {
-                displayTitle = title;
-                pageUrl = BASE_URL + "/movies/" + slug + "/";
-            } else {
-                displayTitle = title + " S" + season + "E" + episode;
-                pageUrl = BASE_URL + "/episodes/" + slug + "-" + season + "x" + episode + "/";
-            }
-
-            console.log("[PinoyMoviesHub] Fetching page:", pageUrl);
-
-            var meta = {
-                season: season,
-                episode: episode,
-                episodeTitle: episodeTitle
-            };
-
-            return fetchText(pageUrl).then(function(html) {
-                var players = extractPlayerData(html);
-                if (!players.length) {
-                    console.log("[PinoyMoviesHub] No player data found");
-                    return [];
-                }
-
-                console.log("[PinoyMoviesHub] Using Dooplayer API approach");
-
-                return Promise.all(players.map(function(player) {
-                    return callDooPlayerAPI(player).then(function(embedUrl) {
-                        if (!embedUrl) return null;
-                        return buildStream(
-                            "PinoyMoviesHub - Source " + player.source,
-                            embedUrl,
-                            "Auto",
-                            "",
-                            displayTitle,
-                            meta
-                        );
-                    });
-                })).then(function(results) {
-                    var streams = [];
-                    var i;
-                    for (i = 0; i < results.length; i++) {
-                        if (results[i]) streams.push(results[i]);
-                    }
-                    console.log("[PinoyMoviesHub] Returning", streams.length, "stream(s)");
-                    return streams;
-                });
-            });
+        return Promise.all(players.map(function (p) {
+          return getEmbedUrl(p).then(function (url) {
+            return makeStream(url, tmdb.title, season, episode, episodeTitle);
+          });
+        })).then(function (items) {
+          var out = [];
+          var seen = {};
+          for (var i = 0; i < items.length; i++) {
+            if (!items[i]) continue;
+            var key = (items[i].url || items[i].externalUrl || "").toLowerCase();
+            if (!key || seen[key]) continue;
+            seen[key] = 1;
+            out.push(items[i]);
+          }
+          return out;
         });
-    }).catch(function(err) {
-        console.error("[PinoyMoviesHub] error:", err.message || err);
-        return [];
+      });
     });
+  }).catch(function (e) {
+    try { console.log("[PinoyMoviesHub] " + (e && e.message ? e.message : e)); } catch (_) {}
+    return [];
+  });
 }
 
-if (typeof module !== "undefined" && module.exports) {
-    module.exports = { getStreams: getStreams };
-} else {
-    global.getStreams = getStreams;
-}
+module.exports = { getStreams: getStreams };
