@@ -1,6 +1,6 @@
 # Nuvio Provider Doctor
 
-Generated: 2026-09-07T15:42:14.717Z  
+Generated: 2026-09-07T15:47:54.790Z  
 Manifest providers: **39**  
 Missing files: **0**  
 Syntax failures: **0**  
