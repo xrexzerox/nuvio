@@ -1,0 +1,19 @@
+{
+  "name": "Nuvio",
+  "version": "1.0.0",
+  "scrapers": [
+    {
+      "id": "pinoymovieshub",
+      "name": "PinoyMoviesHub",
+      "description": "PinoyMoviesHub catalog and public source-link scraper",
+      "version": "1.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "providers/pinoymovieshub.js",
+      "enabled": true,
+      "hasSettings": false,
+      "formats": ["mp4", "m3u8", "mkv"],
+      "contentLanguage": ["tl", "en"]
+    }
+  ]
+}
