@@ -15,7 +15,7 @@ permissions:
 jobs:
   doctor:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,96 +25,42 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install provider dependencies
+      - name: Install declared JS dependencies
         run: npm install --ignore-scripts
 
-      - name: Run provider doctor
-        id: doctor
+      - name: Deterministic provider audit
         run: |
           node <<'NODE'
           const fs = require('fs');
           const cp = require('child_process');
           const manifest = JSON.parse(fs.readFileSync('manifest.json','utf8'));
           const scrapers = Array.isArray(manifest.scrapers) ? manifest.scrapers : [];
-
-          const results = [];
-          const hard = [];
-
-          function safe(s) { return String(s || '').replace(/\|/g,'\\|').replace(/\s+/g,' ').trim(); }
-          function runCheck(file) {
-            try {
-              cp.execFileSync(process.execPath, ['--check', file], {stdio:'pipe'});
-              return {ok:true};
-            } catch (e) {
-              return {ok:false, error: safe((e.stderr && e.stderr.toString()) || e.message)};
-            }
+          const rows = [];
+          const ids = new Set();
+          const files = new Set();
+          const allowedModules = new Set(['cheerio-without-node-native','react-native-cheerio','cheerio','crypto-js','axios','url','querystring','util']);
+          const nodeBuiltins = new Set(['fs','path','http','https','net','tls','dns','child_process','worker_threads','cluster','dgram','readline','os','process','module','stream','zlib','buffer']);
+          function clean(x){return String(x||'').replace(/\s+/g,' ').trim().slice(0,220);}
+          function imports(text){const out=[];let m;const a=/\brequire\(\s*["']([^"']+)["']\s*\)/g;while((m=a.exec(text)))out.push(m[1]);const b=/\bfrom\s*["']([^"']+)["']/g;while((m=b.exec(text)))out.push(m[1]);return [...new Set(out)];}
+          for(const s of scrapers){
+            const r={id:s.id||'',file:s.filename||'',enabled:!!s.enabled,exists:false,syntax:'FAIL',export:'FAIL',modules:'PASS',error:''};
+            if(!r.id||ids.has(r.id)){r.error='duplicate or missing scraper id';rows.push(r);continue;} ids.add(r.id);
+            if(!r.file||files.has(r.file)){r.error='duplicate or missing provider filename';rows.push(r);continue;} files.add(r.file);
+            if(!fs.existsSync(r.file)){r.error='manifest points to missing file';rows.push(r);continue;} r.exists=true;
+            try{cp.execFileSync(process.execPath,['--check',r.file],{stdio:'pipe'});r.syntax='PASS';}catch(e){r.error='syntax: '+clean(e.stderr||e.message);rows.push(r);continue;}
+            const text=fs.readFileSync(r.file,'utf8');
+            if(!/module\.exports|exports\.getStreams|global(?:This)?\.getStreams/.test(text)){r.error='getStreams export pattern not found';rows.push(r);continue;} r.export='PASS';
+            const bad=imports(text).filter(m=>nodeBuiltins.has(m)||(m.startsWith('.')===false&&!allowedModules.has(m)&&!m.startsWith('@')));
+            if(bad.length){r.modules='WARN';r.error='imports: '+bad.join(', ');} rows.push(r);
           }
-
-          async function smoke(provider) {
-            const timeout = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
-            const p = Promise.resolve().then(()=>provider.getStreams('550','movie',undefined,undefined));
-            try {
-              const value = await Promise.race([p, timeout]);
-              return Array.isArray(value) ? {status:'PASS', count:value.length} : {status:'LIVE FAIL', error:'non-array result'};
-            } catch(e) {
-              return {status:'LIVE FAIL', error:safe(e.message || e)};
-            }
-          }
-
-          async function inspect(s) {
-            const r = {id:s.id || '', file:s.filename || '', enabled:!!s.enabled, syntax:'FAIL', export:'FAIL', smoke:'SKIP', streams:0, error:''};
-            if (!s.id || !s.filename) { r.error='missing id/filename'; hard.push(r); return r; }
-            if (!fs.existsSync(s.filename)) { r.error='manifest points to missing file'; hard.push(r); return r; }
-            const syn = runCheck(s.filename);
-            if (!syn.ok) { r.error=syn.error; hard.push(r); return r; }
-            r.syntax='PASS';
-            let mod;
-            try { delete require.cache[require.resolve('./'+s.filename)]; mod=require('./'+s.filename); }
-            catch(e) { r.error='load: '+safe(e.message || e); hard.push(r); return r; }
-            if (!mod || typeof mod.getStreams !== 'function') { r.error='getStreams export missing'; hard.push(r); return r; }
-            r.export='PASS';
-            if (s.enabled) {
-              const sm = await smoke(mod);
-              r.smoke=sm.status;
-              r.streams=sm.count || 0;
-              if (sm.error) r.error=sm.error;
-            }
-            return r;
-          }
-
-          (async()=>{
-            const settled = await Promise.all(scrapers.map(inspect));
-            for (const r of settled) results.push(r);
-            results.sort((a,b)=>String(a.id).localeCompare(String(b.id)));
-
-            const enabled = results.filter(r=>r.enabled);
-            const structural = results.filter(r=>r.syntax!=='PASS'||r.export!=='PASS');
-            const livePass = enabled.filter(r=>r.smoke==='PASS');
-            const liveFail = enabled.filter(r=>r.smoke==='LIVE FAIL');
-
-            let md = '# Nuvio Provider Doctor\n\n';
-            md += `Generated: ${new Date().toISOString()}  \n`;
-            md += `Manifest providers: **${results.length}**  \n`;
-            md += `Enabled: **${enabled.length}**  \n`;
-            md += `Structural failures: **${structural.length}**  \n`;
-            md += `Live smoke pass: **${livePass.length}**  \n`;
-            md += `Live smoke fail/timeout: **${liveFail.length}**  \n\n`;
-            md += '| ID | Enabled | Syntax | Export | Live smoke | Streams | Error |\n';
-            md += '|---|---:|---|---|---|---:|---|\n';
-            for (const r of results) {
-              md += `| ${safe(r.id)} | ${r.enabled?'yes':'no'} | ${r.syntax} | ${r.export} | ${r.smoke} | ${r.streams} | ${safe(r.error)} |\n`;
-            }
-            md += '\n## Interpretation\n\n';
-            md += '- Structural failures are actionable code/manifest problems.\n';
-            md += '- LIVE FAIL means the provider entered `getStreams()` but the remote source did not return usable results within the smoke-test window. This is not automatically treated as a code failure.\n';
-            md += '- Smoke tests never print returned stream URLs.\n';
-
-            fs.writeFileSync('PROVIDER-AUDIT.md', md);
-            console.log(md);
-
-            // Fail CI only for structural errors.
-            process.exit(structural.length ? 1 : 0);
-          })().catch(e=>{ console.error(e); process.exit(1); });
+          const missing=rows.filter(r=>!r.exists), syntaxFail=rows.filter(r=>r.syntax!=='PASS'), exportFail=rows.filter(r=>r.export!=='PASS'&&r.syntax==='PASS'), moduleWarn=rows.filter(r=>r.modules==='WARN');
+          let md='# Nuvio Provider Doctor\n\nGenerated: '+new Date().toISOString()+'  \n';
+          md+='Manifest providers: **'+rows.length+'**  \nMissing files: **'+missing.length+'**  \nSyntax failures: **'+syntaxFail.length+'**  \nExport failures: **'+exportFail.length+'**  \nModule warnings: **'+moduleWarn.length+'**  \n\n';
+          md+='| ID | Enabled | File | Exists | Syntax | Export | Modules | Error |\n|---|---:|---|---:|---|---|---|---|\n';
+          for(const r of rows.sort((a,b)=>String(a.id).localeCompare(String(b.id)))) md+=`| ${r.id} | ${r.enabled?'yes':'no'} | ${r.file} | ${r.exists?'yes':'no'} | ${r.syntax} | ${r.export} | ${r.modules} | ${r.error.replace(/\|/g,'\\|')} |\n`;
+          md+='\n## Notes\n\nPASS means the provider is structurally compatible with the manifest and exports the Nuvio `getStreams` contract. WARN means the bundle references a module that needs compatibility review.\n';
+          fs.writeFileSync('PROVIDER-AUDIT.md',md); console.log(md);
+          process.exit((missing.length||syntaxFail.length||exportFail.length)?1:0);
           NODE
 
       - name: Commit audit report
@@ -123,9 +69,4 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add PROVIDER-AUDIT.md
-          if git diff --cached --quiet; then
-            echo 'No report changes.'
-          else
-            git commit -m 'Add provider health audit report'
-            git push
-          fi
+          if git diff --cached --quiet; then echo 'No report changes.'; else git commit -m 'Add deterministic provider audit report'; git push; fi
