@@ -1,15 +1,203 @@
-/** Shared Nuvio-safe helpers. */
+/**
+ * Shared HTTP + data helpers. Port of the small utilities scattered across
+ * CineStream `CineStreamUtils.kt` / `CineStreamParser.kt` that are meaningful
+ * in a fetch-only JS runtime.
+ */
+import { UA } from './constants.js';
 
-export function normalizeTitle(s) {
-    return String(s || "")
-        .toLowerCase()
-        .replace(/&amp;/g, "&")
-        .replace(/[‘’“”"]/g, "")
-        .replace(/[^a-z0-9]+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+export function defaultHeaders(extra) {
+    return Object.assign({ "User-Agent": UA, "Accept": "*/*" }, extra || {});
 }
 
+/** Nuvio's QuickJS runtime has no timers — degrade to untimed fetch. */
+function hasTimers() {
+    try {
+        return typeof setTimeout === "function" && typeof clearTimeout === "function";
+    } catch (e) {
+        return false;
+    }
+}
+
+export async function fetchWithTimeout(url, options, timeoutMs) {
+    if (!hasTimers()) {
+        return fetch(url, options || {});
+    }
+    const timeout = timeoutMs || 20000;
+    let timer = null;
+    try {
+        const fetchPromise = fetch(url, options || {});
+        const timeoutPromise = new Promise(function (_, reject) {
+            timer = setTimeout(function () {
+                reject(new Error("timeout after " + timeout + "ms: " + url));
+            }, timeout);
+        });
+        const res = await Promise.race([fetchPromise, timeoutPromise]);
+        if (timer) clearTimeout(timer);
+        return res;
+    } catch (e) {
+        if (timer) clearTimeout(timer);
+        throw e;
+    }
+}
+
+export async function fetchText(url, headers, timeoutMs) {
+    const res = await fetchWithTimeout(url, { headers: defaultHeaders(headers) }, timeoutMs);
+    if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
+    return await res.text();
+}
+
+export async function fetchJson(url, headers, timeoutMs) {
+    const text = await fetchText(url, headers, timeoutMs);
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        throw new Error("Bad JSON from " + url + ": " + e.message);
+    }
+}
+
+export async function postJson(url, body, headers, timeoutMs) {
+    const res = await fetchWithTimeout(
+        url,
+        {
+            method: "POST",
+            headers: defaultHeaders(
+                Object.assign({ "Content-Type": "application/json", Accept: "application/json" }, headers || {})
+            ),
+            body: typeof body === "string" ? body : JSON.stringify(body == null ? {} : body)
+        },
+        timeoutMs
+    );
+    if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
+    const text = await res.text();
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        return text;
+    }
+}
+
+/** Port of CineStream `getIndexQuality()`. Returns a Nuvio quality label.
+ *  Explicit resolution numbers win over bare 4K/UHD tokens (release tags
+ *  like "4kHdHub" must not promote a 1080p file to 4K). */
+export function parseQuality(raw) {
+    if (raw == null) return "Auto";
+    const s = String(raw).toLowerCase().replace(/4khdhub|uhdmovies|vegamovies|moviesmod|moviesdrive|bollyflix|hubcloud|vcloud|pixeldrain|gofile/g, " ");
+    const m = s.match(/(\d{3,4})\s*p/i);
+    if (m) {
+        const n = parseInt(m[1], 10);
+        if (n >= 4000) return "8K";
+        if (n >= 1000) return "1080p";
+        if (n >= 700) return "720p";
+        if (n >= 400) return "480p";
+        if (n > 0) return "360p";
+    }
+    if (/\b8k\b/.test(s)) return "8K";
+    if (/2160|4k|uhd/.test(s)) return "4K";
+    if (/org/.test(s)) return "4K";
+    if (/cam|ts|telesync|telecine|hdcam/.test(s)) return "CAM";
+    if (/hd/.test(s)) return "720p";
+    return "Auto";
+}
+
+export function formatOf(url) {
+    const u = String(url || "").toLowerCase();
+    if (u.indexOf(".m3u8") !== -1) return "HLS";
+    if (u.indexOf(".mpd") !== -1) return "DASH";
+    if (u.indexOf(".mp4") !== -1) return "MP4";
+    if (u.indexOf(".mkv") !== -1) return "MKV";
+    return "VIDEO";
+}
+
+/** Normalize a Nuvio stream object (mirrors DOCUMENTATION.md output format). */
+export function makeStream(source, title, url, quality, headers, subtitles, extra) {
+    if (!url) return null;
+    const u = String(url);
+    if (u.indexOf("http") !== 0 && u.indexOf("magnet:?") !== 0) return null;
+    const stream = {
+        name: source,
+        title: title || source,
+        url: u,
+        quality: quality || parseQuality(title),
+        headers: headers || {},
+        subtitles: subtitles || []
+    };
+    // Optional Nuvio result fields (size, language, seeders, infoHash…).
+    if (extra) {
+        Object.keys(extra).forEach(function (k) {
+            if (extra[k] !== undefined && extra[k] !== null && extra[k] !== "") stream[k] = extra[k];
+        });
+    }
+    return stream;
+}
+
+export function normalizeTitle(s) {
+    if (!s) return "";
+    return String(s)
+        .replace(/\[.*?\]/g, " ")
+        .replace(/\(.*?\)/g, " ")
+        .trim()
+        .toLowerCase()
+        .replace(/:/g, " ")
+        .replace(/[^\w\s]/g, " ")
+        .replace(/\s+/g, " ");
+}
+
+export function episodeSlug(season, episode) {
+    const s = String(season).padStart(2, "0");
+    const e = String(episode).padStart(2, "0");
+    return { s: s, e: e, code: "S" + s + "E" + e, alt: "s" + s + "e" + e };
+}
+
+/** Never-reject wrapper so one dead source can't kill the aggregation. */
+export async function safeRun(label, fn) {
+    try {
+        const out = await fn();
+        return Array.isArray(out) ? out : [];
+    } catch (e) {
+        console.log("[Streamline][" + label + "] " + (e && e.message));
+        return [];
+    }
+}
+
+/** Run async tasks with capped concurrency (port of `runLimitedAsync`). */
+export async function runLimited(tasks, concurrency) {
+    const limit = Math.max(1, concurrency || 6);
+    const results = [];
+    for (let i = 0; i < tasks.length; i += limit) {
+        const chunk = tasks.slice(i, i + limit);
+        const settled = await Promise.all(
+            chunk.map(function (t) {
+                try {
+                    return Promise.resolve(t()).catch(function () {
+                        return [];
+                    });
+                } catch (e) {
+                    return Promise.resolve([]);
+                }
+            })
+        );
+        settled.forEach(function (r) {
+            if (Array.isArray(r)) results.push.apply(results, r);
+        });
+    }
+    return results;
+}
+
+export function withTimeout(promise, ms, label) {
+    if (!hasTimers()) return promise;
+    const timeout = ms || 25000;
+    return Promise.race([
+        promise,
+        new Promise(function (resolve) {
+            setTimeout(function () {
+                console.log("[Streamline] timeout: " + label);
+                resolve([]);
+            }, timeout);
+        })
+    ]);
+}
+
+/** De-duplicate streams by URL (providers occasionally repeat hosts). */
 export function dedupe(streams) {
     const seen = {};
     const out = [];
@@ -21,83 +209,41 @@ export function dedupe(streams) {
     return out;
 }
 
-export function makeStream(source, title, url, quality, extra) {
-    if (!url || String(url).indexOf("http") !== 0) return null;
-    const stream = {
-        name: source,
-        title: title || source,
-        url: String(url),
-        quality: quality || "Auto",
-        headers: {}
-    };
-    Object.keys(extra || {}).forEach(function (k) {
-        if (extra[k] !== undefined && extra[k] !== null && extra[k] !== "") stream[k] = extra[k];
-    });
-    return stream;
+/** Base64 helpers that work in Hermes/QuickJS (no Buffer/atob assumed). */
+export function b64DecodeToBytes(b64) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    const clean = String(b64 || "").replace(/[^A-Za-z0-9+/=]/g, "");
+    const bytes = [];
+    let i = 0;
+    while (i < clean.length) {
+        const e1 = chars.indexOf(clean.charAt(i++));
+        const e2 = chars.indexOf(clean.charAt(i++));
+        const e3 = chars.indexOf(clean.charAt(i++));
+        const e4 = chars.indexOf(clean.charAt(i++));
+        const n1 = (e1 << 2) | (e2 >> 4);
+        const n2 = ((e2 & 15) << 4) | (e3 >> 2);
+        const n3 = ((e3 & 3) << 6) | e4;
+        bytes.push(n1);
+        if (e3 !== 64) bytes.push(n2);
+        if (e4 !== 64) bytes.push(n3);
+    }
+    return bytes;
 }
 
-export async function fetchText(url, headers) {
-    const res = await fetch(url, {
-        headers: Object.assign({
-            "User-Agent": "Mozilla/5.0 (compatible; Nuvio PinoyMoviesHub Provider/1.0)",
-            "Accept": "text/html,application/xhtml+xml"
-        }, headers || {})
-    });
-    if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
-    return await res.text();
-}
-
-export async function fetchJson(url, headers) {
-    const text = await fetchText(url, headers);
-    return JSON.parse(text);
-}
-
-export async function safeRun(label, fn) {
+export function bytesToUtf8(bytes) {
+    let out = "";
+    for (let i = 0; i < bytes.length; i++) out += String.fromCharCode(bytes[i]);
     try {
-        const out = await fn();
-        return Array.isArray(out) ? out : [];
+        return decodeURIComponent(escape(out));
     } catch (e) {
-        console.log("[PinoyMoviesHub][" + label + "] " + (e && e.message));
-        return [];
+        return out;
     }
 }
 
-export function absUrl(base, href) {
-    if (!href) return null;
-    const s = String(href).trim();
-    if (/^https?:\/\//i.test(s)) return s;
-    if (s.charAt(0) === "/") return base + s;
-    return base + "/" + s;
-}
-
-export function stripTags(s) {
-    return String(s || "")
-        .replace(/<script[\s\S]*?<\/script>/gi, " ")
-        .replace(/<style[\s\S]*?<\/style>/gi, " ")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, "'")
-        .replace(/&#39;/g, "'")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-export function parseQuality(raw) {
-    const text = String(raw || "").toLowerCase();
-    const m = text.match(/(\d{3,4})\s*p/);
-    if (m) {
-        const n = parseInt(m[1], 10);
-        if (n >= 4000) return "8K";
-        if (n >= 2000) return "4K";
-        if (n >= 1000) return "1080p";
-        if (n >= 700) return "720p";
-        if (n >= 400) return "480p";
+export function b64DecodeUtf8(b64) {
+    try {
+        return bytesToUtf8(b64DecodeToBytes(b64));
+    } catch (e) {
+        return "";
     }
-    if (/\b4k\b|2160|uhd/.test(text)) return "4K";
-    if (/\b1080\b/.test(text)) return "1080p";
-    if (/\b720\b/.test(text)) return "720p";
-    return "Auto";
 }

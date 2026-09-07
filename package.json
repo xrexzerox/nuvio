@@ -1,14 +1,24 @@
 {
-  "name": "pinoymovieshub-nuvio",
-  "version": "1.0.0",
-  "description": "Streamline-style Nuvio provider repository for PinoyMoviesHub.",
+  "name": "streamline",
+  "version": "1.8.0",
+  "description": "Streamline — Nuvio streaming plugin (port of CineStream). Multi-source movies, series & anime running on-device.",
   "scripts": {
-    "build": "node build.js",
-    "build:provider": "node build.js pinoymovieshub"
+    "build": "bun build.js",
+    "build:watch": "bun --watch build.js",
+    "build:provider": "bun build.js",
+    "serve": "bun server.js",
+    "test": "bun test-streamline.js"
   },
   "devDependencies": {
     "esbuild": "^0.20.0"
   },
+  "keywords": [
+    "nuvio",
+    "streamline",
+    "streaming",
+    "providers"
+  ],
+  "license": "GPL-3.0-only",
   "dependencies": {
     "cheerio-without-node-native": "^0.20.2",
     "crypto-js": "^4.2.0"
