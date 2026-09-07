@@ -23,23 +23,31 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/xrexzerox/nvv.git /tmp/nvv
           test -d /tmp/nvv/providers
-          echo "NVV providers:"
-          find /tmp/nvv/providers -maxdepth 1 -type f -name '*.js' -printf '%f\n' | sort
 
-      - name: Copy NVV providers
+      - name: Copy canonical NVV providers
         run: |
           mkdir -p providers
-          cp -f /tmp/nvv/providers/*.js providers/
-          # The NVV PinoyMoviesHub implementation is the known working one.
-          # Keep the current filename too for compatibility with older manifests.
-          cp -f /tmp/nvv/providers/pinoyhub.js providers/pinoymovieshub.js
+          # Copy the canonical providers only. Numbered/new variants are intentionally excluded.
+          for f in \
+            animotvslash.js animepahe.js cinemacity.js 4khdhub.js \
+            pinoyhub.js kisskh.js okru.js castle.js dooflix.js dvdplay.js \
+            hdhub4u.js mallumv.js movieblast.js mycima.js netmirror.js; do
+            if [ -f "/tmp/nvv/providers/$f" ]; then
+              cp -f "/tmp/nvv/providers/$f" providers/
+            fi
+          done
+          # Remove previously imported duplicate/variant files.
+          rm -f providers/4khdhub1.js providers/4khdhub2.js providers/4khdhubnew.js
+          rm -f providers/animotvslash1.js providers/animotvslash2.js
+          rm -f providers/cinemacity1.js providers/kisskh1.js
+          rm -f providers/pinoymovieshub.js
 
       - name: Copy NVV build/config references
         run: |
           cp -f /tmp/nvv/build.js ./nvv-build.js
           cp -f /tmp/nvv/DOCUMENTATION.md ./NVV-DOCUMENTATION.md
 
-      - name: Update manifest with NVV providers
+      - name: Reconcile manifest
         run: |
           python3 - <<'PY'
           import json
@@ -47,10 +55,10 @@ jobs:
 
           manifest_path = Path('manifest.json')
           manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {
-              'name': 'Nuvio', 'version': '1.0.0', 'description': 'Nuvio plugin repository', 'scrapers': []
+              'name': 'Nuvio', 'version': '1.0.0', 'description': 'Nuvio provider collection', 'scrapers': []
           }
-          existing = {s.get('id'): s for s in manifest.get('scrapers', []) if s.get('id')}
 
+          # Canonical NVV registrations. These use the exact filenames copied above.
           nvv = [
               ('animotvslash','ANIMOTVSLASH','Anime streams from animotvslash.org','providers/animotvslash.js',['movie','tv'],['m3u8','mp4'],['en','ja']),
               ('animepahe','AnimePahe','AnimePahe Sub/Dub streams','providers/animepahe.js',['movie','tv'],['m3u8'],['en','ja']),
@@ -68,28 +76,56 @@ jobs:
               ('mycima','MyCima','MyCima provider','providers/mycima.js',['movie','tv'],['m3u8','mp4'],['en','ar']),
               ('netmirror','NetMirror','NetMirror provider','providers/netmirror.js',['movie','tv'],['m3u8','mp4'],['en']),
           ]
+
+          rows = {s.get('id'): s for s in manifest.get('scrapers', []) if s.get('id')}
+          # Remove duplicate/variant registrations and the old duplicate PinoyMoviesHub filename.
+          remove_ids = {'4khdhub1','4khdhub2','4khdhubnew','animotvslash1','animotvslash2','cinemacity1','kisskh1'}
+          for rid in remove_ids:
+              rows.pop(rid, None)
+
+          # Canonicalize PinoyMoviesHub to the NVV implementation.
           for sid,name,desc,filename,types,formats,langs in nvv:
-              existing[sid] = {
+              row = rows.get(sid, {})
+              row.update({
                   'id': sid, 'name': name, 'description': desc, 'version': '4.0.0',
                   'author': 'xrexzerox', 'supportedTypes': types, 'filename': filename,
                   'enabled': True, 'formats': formats, 'contentLanguage': langs
-              }
+              })
+              rows[sid] = row
 
-          # Also keep alternate NVV provider variants available, but disabled by default.
-          for p in Path('providers').glob('*.js'):
-              stem = p.stem
-              if stem.endswith(('1','2','new')) and stem not in existing:
-                  existing[stem] = {
-                      'id': stem, 'name': stem.upper(), 'description': 'NVV compatibility variant',
-                      'version': '1.0.0', 'author': 'xrexzerox', 'supportedTypes': ['movie','tv'],
-                      'filename': str(p).replace('\\','/'), 'enabled': False, 'formats': ['mp4','m3u8','mkv'],
-                      'contentLanguage': ['en']
-                  }
+          # Remove entries pointing at files that no longer exist.
+          rows = {sid:s for sid,s in rows.items() if s.get('filename') and Path(s['filename']).exists()}
 
-          manifest['scrapers'] = list(existing.values())
-          manifest['version'] = '2.0.0'
-          manifest['description'] = 'Nuvio provider collection combining NVV compatibility providers and Streamline providers.'
+          # Remove duplicate filename registrations, keeping the first canonical entry.
+          seen_files = set()
+          clean = []
+          for s in rows.values():
+              f = s.get('filename')
+              if f in seen_files:
+                  continue
+              seen_files.add(f)
+              clean.append(s)
+
+          manifest['scrapers'] = clean
+          manifest['version'] = '2.3.0'
+          manifest['description'] = 'Nuvio provider collection with canonical NVV-compatible providers and Streamline providers.'
           manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n')
+          PY
+
+      - name: Validate no duplicate provider files in manifest
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text())
+          rows=m.get('scrapers',[])
+          ids=[x.get('id') for x in rows]
+          files=[x.get('filename') for x in rows]
+          assert len(ids)==len(set(ids)), 'duplicate scraper ids'
+          assert len(files)==len(set(files)), 'duplicate scraper filenames'
+          for f in files:
+              assert f and Path(f).exists(), f'missing provider: {f}'
+          print(f'Validated {len(rows)} registered providers.')
           PY
 
       - name: Commit synchronized providers
@@ -100,6 +136,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No changes to commit.'
           else
-            git commit -m 'Sync NVV providers and compatibility manifest'
+            git commit -m 'Clean duplicate NVV providers and manifest'
             git push
           fi
