@@ -1,0 +1,181 @@
+name: Prune Dead Providers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'manifest.json'
+      - 'providers/**'
+      - '.github/workflows/prune-dead-providers.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prune unreachable providers and duplicate files
+        run: |
+          python3 - <<'PY'
+          import json, re, socket, subprocess
+          from pathlib import Path
+          from urllib.parse import urlparse
+
+          manifest_path = Path('manifest.json')
+          manifest = json.loads(manifest_path.read_text())
+          scrapers = manifest.get('scrapers', [])
+
+          duplicate_files = {
+              'providers/4khdhub1.js', 'providers/4khdhub2.js', 'providers/4khdhubnew.js',
+              'providers/animotvslash1.js', 'providers/animotvslash2.js',
+              'providers/cinemacity1.js', 'providers/kisskh1.js',
+              'providers/pinoymovieshub.js'
+          }
+
+          removed = []
+          for f in duplicate_files:
+              p = Path(f)
+              if p.exists():
+                  p.unlink()
+                  removed.append(f)
+
+          # Deduplicate manifest by id and filename. Prefer the first occurrence.
+          seen_ids, seen_files = set(), set()
+          clean = []
+          for s in scrapers:
+              sid = s.get('id')
+              filename = s.get('filename')
+              if not sid or not filename or sid in seen_ids or filename in seen_files:
+                  continue
+              if Path(filename).exists() is False:
+                  continue
+              seen_ids.add(sid); seen_files.add(filename)
+              # Canonical PinoyMoviesHub implementation lives in pinoyhub.js.
+              if sid == 'pinoymovieshub':
+                  s['filename'] = 'providers/pinoyhub.js'
+              clean.append(s)
+
+          def candidate_domains(s):
+              vals = []
+              f = s.get('filename')
+              if f and Path(f).exists():
+                  text = Path(f).read_text(errors='ignore')
+                  for u in re.findall(r'https://[^\"\'\s<>`]+', text):
+                      try:
+                          host = urlparse(u).hostname
+                          if host: vals.append(host.lower())
+                      except Exception:
+                          pass
+              logo = str(s.get('logo') or '')
+              # Google favicon URLs encode the actual domain in ?domain=...
+              m = re.search(r'[?&]domain=([^&]+)', logo)
+              if m:
+                  vals.append(m.group(1).lower())
+              else:
+                  try:
+                      host = urlparse(logo).hostname
+                      if host and 'google.' not in host:
+                          vals.append(host.lower())
+                  except Exception:
+                      pass
+              out = []
+              for x in vals:
+                  x = x.lstrip('www.')
+                  if x not in out:
+                      out.append(x)
+              return out[:12]
+
+          def reachable(host):
+              # DNS first, then an HTTP probe. Auth/forbidden responses still mean alive.
+              try:
+                  socket.gethostbyname(host)
+              except Exception:
+                  return False, 'DNS'
+              code = subprocess.run(
+                  ['curl','-L','-sS','--max-time','7','-o','/dev/null','-w','%{http_code}',
+                   '--user-agent','Mozilla/5.0', 'https://' + host + '/'],
+                  text=True, capture_output=True
+              ).stdout.strip()
+              if not code or code == '000':
+                  return False, 'CONNECT'
+              try:
+                  n = int(code)
+              except Exception:
+                  return False, code
+              return (n >= 200 and n < 600), code
+
+          final = []
+          dead = []
+          for s in clean:
+              domains = candidate_domains(s)
+              if not domains:
+                  final.append(s)
+                  continue
+              checks = [reachable(d) for d in domains]
+              alive = [d for d,(ok,_) in zip(domains, checks) if ok]
+              if alive:
+                  final.append(s)
+              else:
+                  dead.append((s.get('id'), s.get('filename'), domains, checks))
+                  p = Path(s.get('filename',''))
+                  if p.exists():
+                      p.unlink()
+
+          manifest['scrapers'] = final
+          manifest['version'] = '2.4.0'
+          manifest['description'] = 'Nuvio provider collection with canonical providers; unreachable providers removed by health check.'
+          manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n')
+
+          report = ['# Provider Cleanup Report','',f'Registered after cleanup: **{len(final)}**','',
+                    '## Removed duplicate files']
+          report += [f'- `{x}`' for x in removed] or ['- None']
+          report += ['', '## Removed unreachable providers']
+          if dead:
+              for sid,fn,domains,checks in dead:
+                  details=', '.join(f'{d}:{c}' for d,(ok,c) in zip(domains,checks))
+                  report.append(f'- `{sid}` — `{fn}` — {details}')
+          else:
+              report.append('- None confirmed unreachable by this check.')
+          report += ['', '## Rule', '',
+                     'A provider is removed only when all discovered provider/logo domains fail DNS or connection checks. HTTP status codes such as 401, 403, 404, and 405 are treated as reachable rather than automatically dead.']
+          Path('PROVIDER-CLEANUP.md').write_text('\n'.join(report) + '\n')
+          print('\n'.join(report))
+          PY
+
+      - name: Validate final manifest
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text())
+          ids=[x.get('id') for x in m.get('scrapers',[])]
+          files=[x.get('filename') for x in m.get('scrapers',[])]
+          assert len(ids)==len(set(ids)), 'duplicate scraper ids'
+          assert len(files)==len(set(files)), 'duplicate scraper filenames'
+          for f in files:
+              assert f and Path(f).exists(), f'missing provider: {f}'
+          assert not any(Path(p).exists() for p in [
+              'providers/4khdhub1.js','providers/4khdhub2.js','providers/4khdhubnew.js',
+              'providers/animotvslash1.js','providers/animotvslash2.js',
+              'providers/cinemacity1.js','providers/kisskh1.js','providers/pinoymovieshub.js'
+          ])
+          print(f'Final manifest: {len(files)} unique providers')
+          PY
+
+      - name: Commit cleanup
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add manifest.json providers PROVIDER-CLEANUP.md
+          if git diff --cached --quiet; then
+            echo 'No cleanup changes.'
+          else
+            git commit -m 'Remove duplicate and unreachable providers'
+            git push
+          fi
