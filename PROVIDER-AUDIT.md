@@ -1,41 +1,39 @@
 # Nuvio Provider Doctor
 
-Generated: 2026-09-07T15:36:32.979Z  
+Generated: 2026-09-07T15:37:03.764Z  
 Manifest providers: **24**  
-Enabled: **24**  
-Structural failures: **0**  
-Live smoke pass: **24**  
-Live smoke fail/timeout: **0**  
+Missing files: **0**  
+Syntax failures: **0**  
+Export failures: **0**  
+Module warnings: **1**  
 
-| ID | Enabled | Syntax | Export | Live smoke | Streams | Error |
-|---|---:|---|---|---|---:|---|
-| allmovieland | yes | PASS | PASS | PASS | 0 |  |
-| anidb | yes | PASS | PASS | PASS | 0 |  |
-| anizone | yes | PASS | PASS | PASS | 0 |  |
-| bollyflix | yes | PASS | PASS | PASS | 0 |  |
-| cinejoy | yes | PASS | PASS | PASS | 0 |  |
-| hdhub | yes | PASS | PASS | PASS | 7 |  |
-| hexa | yes | PASS | PASS | PASS | 6 |  |
-| moviebox | yes | PASS | PASS | PASS | 0 |  |
-| moviesdrive | yes | PASS | PASS | PASS | 0 |  |
-| moviesmod | yes | PASS | PASS | PASS | 0 |  |
-| pinoymovieshub | yes | PASS | PASS | PASS | 0 |  |
-| primesrc | yes | PASS | PASS | PASS | 0 |  |
-| rogmovies | yes | PASS | PASS | PASS | 0 |  |
-| showbox | yes | PASS | PASS | PASS | 0 |  |
-| torrents | yes | PASS | PASS | PASS | 20 |  |
-| uhdmovies | yes | PASS | PASS | PASS | 0 |  |
-| vaplayer | yes | PASS | PASS | PASS | 3 |  |
-| vegamovies | yes | PASS | PASS | PASS | 0 |  |
-| vidcore | yes | PASS | PASS | PASS | 0 |  |
-| videasy | yes | PASS | PASS | PASS | 7 |  |
-| vidfast | yes | PASS | PASS | PASS | 4 |  |
-| vidlink | yes | PASS | PASS | PASS | 3 |  |
-| vidrock | yes | PASS | PASS | PASS | 4 |  |
-| vidzee | yes | PASS | PASS | PASS | 0 |  |
+| ID | Enabled | File | Exists | Syntax | Export | Modules | Error |
+|---|---:|---|---:|---|---|---|---|
+| allmovieland | yes | providers/allmovieland.js | yes | PASS | PASS | PASS |  |
+| anidb | yes | providers/anidb.js | yes | PASS | PASS | PASS |  |
+| anizone | yes | providers/anizone.js | yes | PASS | PASS | PASS |  |
+| bollyflix | yes | providers/bollyflix.js | yes | PASS | PASS | PASS |  |
+| cinejoy | yes | providers/cinejoy.js | yes | PASS | PASS | PASS |  |
+| hdhub | yes | providers/hdhub.js | yes | PASS | PASS | PASS |  |
+| hexa | yes | providers/hexa.js | yes | PASS | PASS | PASS |  |
+| moviebox | yes | providers/moviebox.js | yes | PASS | PASS | PASS |  |
+| moviesdrive | yes | providers/moviesdrive.js | yes | PASS | PASS | PASS |  |
+| moviesmod | yes | providers/moviesmod.js | yes | PASS | PASS | PASS |  |
+| pinoymovieshub | yes | providers/pinoymovieshub.js | yes | PASS | PASS | PASS |  |
+| primesrc | yes | providers/primesrc.js | yes | PASS | PASS | PASS |  |
+| rogmovies | yes | providers/rogmovies.js | yes | PASS | PASS | PASS |  |
+| showbox | yes | providers/showbox.js | yes | PASS | PASS | PASS |  |
+| torrents | yes | providers/torrents.js | yes | PASS | PASS | PASS |  |
+| uhdmovies | yes | providers/uhdmovies.js | yes | PASS | PASS | PASS |  |
+| vaplayer | yes | providers/vaplayer.js | yes | PASS | PASS | PASS |  |
+| vegamovies | yes | providers/vegamovies.js | yes | PASS | PASS | PASS |  |
+| vidcore | yes | providers/vidcore.js | yes | PASS | PASS | PASS |  |
+| videasy | yes | providers/videasy.js | yes | PASS | PASS | PASS |  |
+| vidfast | yes | providers/vidfast.js | yes | PASS | PASS | PASS |  |
+| vidlink | yes | providers/vidlink.js | yes | PASS | PASS | PASS |  |
+| vidrock | yes | providers/vidrock.js | yes | PASS | PASS | WARN | imports: node:crypto |
+| vidzee | yes | providers/vidzee.js | yes | PASS | PASS | PASS |  |
 
-## Interpretation
+## Notes
 
-- Structural failures are actionable code/manifest problems.
-- LIVE FAIL means the provider entered `getStreams()` but the remote source did not return usable results within the smoke-test window. This is not automatically treated as a code failure.
-- Smoke tests never print returned stream URLs.
+PASS means the provider is structurally compatible with the manifest and exports the Nuvio `getStreams` contract. WARN means the bundle references a module that needs compatibility review.
