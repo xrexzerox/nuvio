@@ -1,7 +1,7 @@
 {
   "name": "Nuvio",
-  "version": "2.3.0",
-  "description": "Nuvio provider collection with canonical NVV-compatible providers and Streamline providers.",
+  "version": "2.4.0",
+  "description": "Nuvio provider collection with canonical providers; unreachable providers removed by health check.",
   "author": "xrexzerox",
   "scrapers": [
     {
