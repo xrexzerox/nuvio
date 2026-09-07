@@ -520,8 +520,8 @@
     {
       "id": "pinoymovieshub",
       "name": "PinoyMoviesHub",
-      "description": "Filipino movies & series from PinoyMoviesHub",
-      "version": "4.0.0",
+      "description": "Filipino movies and series from PinoyMoviesHub",
+      "version": "4.1.0",
       "author": "xrexzerox",
       "supportedTypes": [
         "movie",
@@ -532,6 +532,7 @@
       "formats": [
         "mp4",
         "m3u8",
+        "mkv",
         "webm"
       ],
       "contentLanguage": [
