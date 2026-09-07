@@ -1,0 +1,42 @@
+name: Test PinoyMoviesHub
+
+on:
+  push:
+    paths:
+      - 'providers/pinoymovieshub.js'
+      - 'src/pinoymovieshub/**'
+      - '.github/workflows/test-pinoymovieshub.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify provider export and live getStreams
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = './providers/pinoymovieshub.js';
+          if (!fs.existsSync(path)) throw new Error('provider bundle missing');
+          const provider = require(path);
+          if (!provider || typeof provider.getStreams !== 'function') {
+            throw new Error('getStreams export missing');
+          }
+
+          (async () => {
+            const id = '102382'; // The Amazing Spider-Man 2
+            const streams = await provider.getStreams(id, 'movie', undefined, undefined);
+            console.log('STREAM_COUNT=' + (Array.isArray(streams) ? streams.length : -1));
+            if (!Array.isArray(streams)) throw new Error('getStreams did not return an array');
+            for (const s of streams) {
+              console.log(JSON.stringify({name:s.name,title:s.title,url:s.url,quality:s.quality}));
+            }
+            process.exit(streams.length > 0 ? 0 : 2);
+          })().catch(err => {
+            console.error(err && err.stack || err);
+            process.exit(1);
+          });
+          NODE
