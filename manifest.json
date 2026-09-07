@@ -1,7 +1,7 @@
 {
   "name": "Nuvio",
-  "version": "2.2.0",
-  "description": "Nuvio provider collection with Streamline and NVV-compatible providers.",
+  "version": "2.3.0",
+  "description": "Nuvio provider collection with canonical NVV-compatible providers and Streamline providers.",
   "author": "xrexzerox",
   "scrapers": [
     {
@@ -520,8 +520,8 @@
     {
       "id": "pinoymovieshub",
       "name": "PinoyMoviesHub",
-      "description": "NVV-compatible provider",
-      "version": "1.0.0",
+      "description": "Filipino movies & series from PinoyMoviesHub",
+      "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
         "movie",
@@ -543,7 +543,7 @@
     {
       "id": "animotvslash",
       "name": "ANIMOTVSLASH",
-      "description": "NVV-compatible provider",
+      "description": "Anime streams from animotvslash.org",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -564,7 +564,7 @@
     {
       "id": "animepahe",
       "name": "AnimePahe",
-      "description": "NVV-compatible provider",
+      "description": "AnimePahe Sub/Dub streams",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -584,7 +584,7 @@
     {
       "id": "cinemacity",
       "name": "CinemaCity",
-      "description": "NVV-compatible provider",
+      "description": "CinemaCity streams",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -605,7 +605,7 @@
     {
       "id": "4khdhub",
       "name": "4KHDHub",
-      "description": "NVV-compatible provider",
+      "description": "4K/1080p/720p Movies & TV from 4KHDHub",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -630,7 +630,7 @@
     {
       "id": "kisskh",
       "name": "KissKH",
-      "description": "NVV-compatible provider",
+      "description": "Korean dramas and Asian TV shows from KissKH",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -653,7 +653,7 @@
     {
       "id": "okru",
       "name": "OK.ru",
-      "description": "NVV-compatible provider",
+      "description": "OK.ru video streams",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -674,7 +674,7 @@
     {
       "id": "castle",
       "name": "Castle",
-      "description": "NVV-compatible provider",
+      "description": "Castle streaming provider",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -694,7 +694,7 @@
     {
       "id": "dooflix",
       "name": "DooFlix",
-      "description": "NVV-compatible provider",
+      "description": "DooFlix streaming provider",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -714,7 +714,7 @@
     {
       "id": "dvdplay",
       "name": "DVDPlay",
-      "description": "NVV-compatible provider",
+      "description": "DVDPlay streaming provider",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -734,7 +734,7 @@
     {
       "id": "hdhub4u",
       "name": "HDHub4u",
-      "description": "NVV-compatible provider",
+      "description": "HDHub4u provider",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -756,7 +756,7 @@
     {
       "id": "mallumv",
       "name": "MallumV",
-      "description": "NVV-compatible provider",
+      "description": "MallumV provider",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -777,7 +777,7 @@
     {
       "id": "movieblast",
       "name": "MovieBlast",
-      "description": "NVV-compatible provider",
+      "description": "MovieBlast provider",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -797,7 +797,7 @@
     {
       "id": "mycima",
       "name": "MyCima",
-      "description": "NVV-compatible provider",
+      "description": "MyCima provider",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
@@ -818,7 +818,7 @@
     {
       "id": "netmirror",
       "name": "NetMirror",
-      "description": "NVV-compatible provider",
+      "description": "NetMirror provider",
       "version": "4.0.0",
       "author": "xrexzerox",
       "supportedTypes": [
