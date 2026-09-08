@@ -1,7 +1,7 @@
 # Nuvio Provider Doctor
 
-Generated: 2026-09-07T15:55:44.574Z  
-Manifest providers: **39**  
+Generated: 2026-09-08T03:21:52.364Z  
+Manifest providers: **38**  
 Missing files: **0**  
 Syntax failures: **0**  
 Export failures: **0**  
@@ -21,7 +21,6 @@ Module warnings: **1**
 | cinemacity | yes | providers/cinemacity.js | yes | PASS | PASS | PASS |  |
 | dooflix | yes | providers/dooflix.js | yes | PASS | PASS | PASS |  |
 | dvdplay | yes | providers/dvdplay.js | yes | PASS | PASS | PASS |  |
-| hdhub | yes | providers/hdhub.js | yes | PASS | PASS | PASS |  |
 | hdhub4u | yes | providers/hdhub4u.js | yes | PASS | PASS | PASS |  |
 | hexa | yes | providers/hexa.js | yes | PASS | PASS | PASS |  |
 | kisskh | yes | providers/kisskh.js | yes | PASS | PASS | PASS |  |
