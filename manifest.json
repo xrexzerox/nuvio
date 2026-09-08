@@ -1,47 +1,837 @@
 {
   "name": "Nuvio",
-  "version": "2.4.1",
-  "description": "Nuvio provider collection with canonical providers; PinoyMoviesHub restored with NuvioMobile-compatible embed handling.",
+  "version": "2.5.0",
+  "description": "Canonical Nuvio provider collection; duplicate scraper IDs and redundant provider registrations removed.",
   "author": "xrexzerox",
   "scrapers": [
-    {"id":"vidlink","name":"Vidlink","description":"Vidlink streaming with encrypted TMDB ID support (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/vidlink.js","enabled":true,"formats":["m3u8","mp4"],"logo":"https://www.google.com/s2/favicons?domain=vidlink.pro&sz=128","contentLanguage":["en"]},
-    {"id":"videasy","name":"Videasy","description":"Videasy multi-server streaming with subtitles (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/videasy.js","enabled":true,"formats":["m3u8","mp4","mkv"],"logo":"https://www.google.com/s2/favicons?domain=videasy.net&sz=128","contentLanguage":["en","hi","es","fr","de"]},
-    {"id":"hexa","name":"Hexa","description":"Hexa high-quality streams via TMDB mapping (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/hexa.js","enabled":true,"hasSettings":true,"formats":["m3u8"],"logo":"https://www.google.com/s2/favicons?domain=hexa.su&sz=128","contentLanguage":["en"]},
-    {"id":"vidzee","name":"Vidzee","description":"Vidzee multi-server streaming with subtitles (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/vidzee.js","enabled":true,"formats":["m3u8","mp4"],"logo":"https://www.google.com/s2/favicons?domain=player.vidzee.wtf&sz=128","contentLanguage":["en"]},
-    {"id":"vidrock","name":"Vidrock","description":"Vidrock direct streams, TMDB-keyed (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/vidrock.js","enabled":true,"hasSettings":true,"formats":["m3u8","mp4"],"logo":"https://www.google.com/s2/favicons?domain=vidrock.ru&sz=128","contentLanguage":["en"]},
-    {"id":"vidfast","name":"VidFast","description":"VidFast multi-server streaming with subtitles (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/vidfast.js","enabled":true,"formats":["m3u8","mp4"],"logo":"https://www.google.com/s2/favicons?domain=vidfast.vc&sz=128","contentLanguage":["en"]},
-    {"id":"vidcore","name":"Vidcore","description":"Vidcore multi-server streaming with subtitles (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/vidcore.js","enabled":true,"formats":["m3u8"],"logo":"https://www.google.com/s2/favicons?domain=vidcore.io&sz=128","contentLanguage":["en"]},
-    {"id":"vaplayer","name":"VaPlayer","description":"VaPlayer HLS streams with subtitles (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/vaplayer.js","enabled":true,"formats":["m3u8"],"logo":"https://www.google.com/s2/favicons?domain=vaplayer.ru&sz=128","contentLanguage":["en"]},
-    {"id":"primesrc","name":"PrimeSrc","description":"PrimeSrc multi-server direct links (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/primesrc.js","enabled":true,"hasSettings":true,"formats":["mp4","m3u8"],"logo":"https://www.google.com/s2/favicons?domain=primesrc.me&sz=128","contentLanguage":["en"]},
-    {"id":"showbox","name":"ShowBox","description":"ShowBox/FebBox quality lists. Needs a FebBox token (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/showbox.js","enabled":true,"hasSettings":true,"formats":["mp4","m3u8"],"logo":"https://www.google.com/s2/favicons?domain=showbox.media&sz=128","contentLanguage":["en"]},
-    {"id":"moviebox","name":"MovieBox","description":"MovieBox multi-language streams with captions (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/moviebox.js","enabled":true,"formats":["mp4","m3u8"],"logo":"https://www.google.com/s2/favicons?domain=moviebox.ph&sz=128","contentLanguage":["en","hi","ta","te"]},
-    {"id":"allmovieland","name":"AllMovieLand","description":"AllMovieLand multi-language HLS (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/allmovieland.js","enabled":true,"hasSettings":true,"formats":["m3u8"],"logo":"https://www.google.com/s2/favicons?domain=allmovieland.one&sz=128","contentLanguage":["en","hi","ta","te"]},
-    {"id":"cinejoy","name":"Cinejoy","description":"Cinejoy multi-server streams (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/cinejoy.js","enabled":true,"hasSettings":true,"formats":["m3u8","mp4"],"logo":"https://www.google.com/s2/favicons?domain=cinejoy.to&sz=128","contentLanguage":["en"]},
-    {"id":"hdhub","name":"4KHDHub","description":"4KHDHub direct links, 480p up to UHD REMUX — giant files kept (Streamline port of CineStream).","version":"1.4.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/hdhub.js","enabled":true,"hasSettings":true,"formats":["mkv","mp4"],"logo":"https://www.google.com/s2/favicons?domain=4khdhub.click&sz=128","contentLanguage":["en","hi"]},
-    {"id":"uhdmovies","name":"UHDMovies","description":"UHDMovies multi-resolution direct links (Streamline port of CineStream).","version":"1.4.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/uhdmovies.js","enabled":true,"hasSettings":true,"formats":["mkv","mp4"],"logo":"https://www.google.com/s2/favicons?domain=uhdmovies.pink&sz=128","contentLanguage":["en","hi"]},
-    {"id":"moviesmod","name":"MoviesMod","description":"MoviesMod multi-quality direct links (Streamline port of CineStream).","version":"1.4.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/moviesmod.js","enabled":true,"hasSettings":true,"formats":["mkv","mp4"],"logo":"https://www.google.com/s2/favicons?domain=moviesmod.farm&sz=128","contentLanguage":["en","hi"]},
-    {"id":"moviesdrive","name":"MoviesDrive","description":"MoviesDrive HubCloud/GDrive extraction (Streamline port of CineStream).","version":"1.4.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/moviesdrive.js","enabled":true,"hasSettings":true,"formats":["mkv","mp4"],"logo":"https://www.google.com/s2/favicons?domain=moviesdrives.my&sz=128","contentLanguage":["en","hi"]},
-    {"id":"vegamovies","name":"VegaMovies","description":"VegaMovies high-quality direct links, full REMUX kept (Streamline port of CineStream).","version":"1.4.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/vegamovies.js","enabled":true,"hasSettings":true,"formats":["mkv","mp4"],"logo":"https://www.google.com/s2/favicons?domain=vegamovies.to&sz=128","contentLanguage":["en","hi"]},
-    {"id":"rogmovies","name":"RogMovies","description":"RogMovies for Indian titles, full quality kept (Streamline port of CineStream).","version":"1.4.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/rogmovies.js","enabled":true,"hasSettings":true,"formats":["mkv","mp4"],"logo":"https://www.google.com/s2/favicons?domain=rogmovies.top&sz=128","contentLanguage":["en","hi"]},
-    {"id":"bollyflix","name":"Bollyflix","description":"Bollyflix multi-quality direct links (Streamline port of CineStream).","version":"1.4.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/bollyflix.js","enabled":true,"hasSettings":true,"formats":["mkv","mp4"],"logo":"https://www.google.com/s2/favicons?domain=bollyflix.in&sz=128","contentLanguage":["en","hi"]},
-    {"id":"anizone","name":"Anizone","description":"Anizone multi-audio anime streams (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/anizone.js","enabled":true,"formats":["m3u8"],"logo":"https://www.google.com/s2/favicons?domain=anizone.to&sz=128","contentLanguage":["en","ja"]},
-    {"id":"anidb","name":"AniDB","description":"AniDB subbed/dubbed anime with multi-audio HLS (Streamline clean-room port).","version":"1.1.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/anidb.js","enabled":true,"formats":["m3u8"],"logo":"https://i.postimg.cc/rmMzZ45K/anidb.png","contentLanguage":["en","ja","ko"]},
-    {"id":"torrents","name":"Torrents","description":"Torrentio + TorrentsDB magnets for Nuvio native debrid. All swarms kept, incl. giant REMUX (Streamline port of CineStream).","version":"1.2.0","author":"Streamline","supportedTypes":["movie","tv"],"filename":"providers/torrents.js","enabled":true,"hasSettings":true,"formats":["mkv","mp4"],"logo":"https://www.google.com/s2/favicons?domain=torrentio.strem.fun&sz=128","contentLanguage":["en","hi"]},
-    {"id":"pinoymovieshub","name":"PinoyMoviesHub","description":"Filipino movies and series from PinoyMoviesHub","version":"4.1.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/pinoyhub.js","enabled":true,"formats":["mp4","m3u8","mkv","webm"],"contentLanguage":["tl","fil","en"]},
-    {"id":"animotvslash","name":"ANIMOTVSLASH","description":"Anime streams from animotvslash.org","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/animotvslash.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en","ja"]},
-    {"id":"animepahe","name":"AnimePahe","description":"AnimePahe Sub/Dub streams","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/animepahe.js","enabled":true,"formats":["m3u8"],"contentLanguage":["en","ja"]},
-    {"id":"cinemacity","name":"CinemaCity","description":"CinemaCity streams","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/cinemacity.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en","ja"]},
-    {"id":"4khdhub","name":"4KHDHub","description":"4K/1080p/720p Movies & TV from 4KHDHub","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/4khdhub.js","enabled":true,"formats":["mp4","mkv","m3u8"],"contentLanguage":["en","hi","ta","te","tl"]},
-    {"id":"kisskh","name":"KissKH","description":"Korean dramas and Asian TV shows from KissKH","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/kisskh.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en","ko","ja","zh"]},
-    {"id":"okru","name":"OK.ru","description":"OK.ru video streams","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/okru.js","enabled":true,"formats":["mp4","m3u8"],"contentLanguage":["ru","en"]},
-    {"id":"castle","name":"Castle","description":"Castle streaming provider","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/castle.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en"]},
-    {"id":"dooflix","name":"DooFlix","description":"DooFlix streaming provider","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/dooflix.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en"]},
-    {"id":"dvdplay","name":"DVDPlay","description":"DVDPlay streaming provider","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/dvdplay.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en"]},
-    {"id":"hdhub4u","name":"HDHub4u","description":"HDHub4u provider","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/hdhub4u.js","enabled":true,"formats":["m3u8","mp4","mkv"],"contentLanguage":["en","hi"]},
-    {"id":"mallumv","name":"MallumV","description":"MallumV provider","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/mallumv.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en","ml"]},
-    {"id":"movieblast","name":"MovieBlast","description":"MovieBlast provider","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/movieblast.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en"]},
-    {"id":"mycima","name":"MyCima","description":"MyCima provider","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/mycima.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en","ar"]},
-    {"id":"netmirror","name":"NetMirror","description":"NetMirror provider","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/netmirror.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en"]},
-    {"id":"myflixer","name":"MyFlixer","description":"NVV-compatible provider","version":"4.0.0","author":"xrexzerox","supportedTypes":["movie","tv"],"filename":"providers/myflixer-extractor.js","enabled":true,"formats":["m3u8","mp4"],"contentLanguage":["en"]}
+    {
+      "id": "vidlink",
+      "name": "Vidlink",
+      "description": "Vidlink streaming with encrypted TMDB ID support (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/vidlink.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=vidlink.pro&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "videasy",
+      "name": "Videasy",
+      "description": "Videasy multi-server streaming with subtitles (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/videasy.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4",
+        "mkv"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=videasy.net&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "es",
+        "fr",
+        "de"
+      ]
+    },
+    {
+      "id": "hexa",
+      "name": "Hexa",
+      "description": "Hexa high-quality streams via TMDB mapping (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/hexa.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "m3u8"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=hexa.su&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "vidzee",
+      "name": "Vidzee",
+      "description": "Vidzee multi-server streaming with subtitles (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/vidzee.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=player.vidzee.wtf&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "vidrock",
+      "name": "Vidrock",
+      "description": "Vidrock direct streams, TMDB-keyed (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/vidrock.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=vidrock.ru&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "vidfast",
+      "name": "VidFast",
+      "description": "VidFast multi-server streaming with subtitles (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/vidfast.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=vidfast.vc&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "vidcore",
+      "name": "Vidcore",
+      "description": "Vidcore multi-server streaming with subtitles (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/vidcore.js",
+      "enabled": true,
+      "formats": [
+        "m3u8"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=vidcore.io&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "vaplayer",
+      "name": "VaPlayer",
+      "description": "VaPlayer HLS streams with subtitles (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/vaplayer.js",
+      "enabled": true,
+      "formats": [
+        "m3u8"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=vaplayer.ru&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "primesrc",
+      "name": "PrimeSrc",
+      "description": "PrimeSrc multi-server direct links (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/primesrc.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=primesrc.me&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "showbox",
+      "name": "ShowBox",
+      "description": "ShowBox/FebBox quality lists. Needs a FebBox token (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/showbox.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=showbox.media&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "moviebox",
+      "name": "MovieBox",
+      "description": "MovieBox multi-language streams with captions (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/moviebox.js",
+      "enabled": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=moviebox.ph&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ta",
+        "te"
+      ]
+    },
+    {
+      "id": "allmovieland",
+      "name": "AllMovieLand",
+      "description": "AllMovieLand multi-language HLS (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/allmovieland.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "m3u8"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=allmovieland.one&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ta",
+        "te"
+      ]
+    },
+    {
+      "id": "cinejoy",
+      "name": "Cinejoy",
+      "description": "Cinejoy multi-server streams (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/cinejoy.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=cinejoy.to&sz=128",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "uhdmovies",
+      "name": "UHDMovies",
+      "description": "UHDMovies multi-resolution direct links (Streamline port of CineStream).",
+      "version": "1.4.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/uhdmovies.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=uhdmovies.pink&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "moviesmod",
+      "name": "MoviesMod",
+      "description": "MoviesMod multi-quality direct links (Streamline port of CineStream).",
+      "version": "1.4.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/moviesmod.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=moviesmod.farm&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "moviesdrive",
+      "name": "MoviesDrive",
+      "description": "MoviesDrive HubCloud/GDrive extraction (Streamline port of CineStream).",
+      "version": "1.4.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/moviesdrive.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=moviesdrives.my&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "vegamovies",
+      "name": "VegaMovies",
+      "description": "VegaMovies high-quality direct links, full REMUX kept (Streamline port of CineStream).",
+      "version": "1.4.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/vegamovies.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=vegamovies.to&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "rogmovies",
+      "name": "RogMovies",
+      "description": "RogMovies for Indian titles, full quality kept (Streamline port of CineStream).",
+      "version": "1.4.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/rogmovies.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=rogmovies.top&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "bollyflix",
+      "name": "Bollyflix",
+      "description": "Bollyflix multi-quality direct links (Streamline port of CineStream).",
+      "version": "1.4.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/bollyflix.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=bollyflix.in&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "anizone",
+      "name": "Anizone",
+      "description": "Anizone multi-audio anime streams (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/anizone.js",
+      "enabled": true,
+      "formats": [
+        "m3u8"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=anizone.to&sz=128",
+      "contentLanguage": [
+        "en",
+        "ja"
+      ]
+    },
+    {
+      "id": "anidb",
+      "name": "AniDB",
+      "description": "AniDB subbed/dubbed anime with multi-audio HLS (Streamline clean-room port).",
+      "version": "1.1.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/anidb.js",
+      "enabled": true,
+      "formats": [
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/rmMzZ45K/anidb.png",
+      "contentLanguage": [
+        "en",
+        "ja",
+        "ko"
+      ]
+    },
+    {
+      "id": "torrents",
+      "name": "Torrents",
+      "description": "Torrentio + TorrentsDB magnets for Nuvio native debrid. All swarms kept, incl. giant REMUX (Streamline port of CineStream).",
+      "version": "1.2.0",
+      "author": "Streamline",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/torrents.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4"
+      ],
+      "logo": "https://www.google.com/s2/favicons?domain=torrentio.strem.fun&sz=128",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "pinoymovieshub",
+      "name": "PinoyMoviesHub",
+      "description": "Filipino movies and series from PinoyMoviesHub",
+      "version": "4.1.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/pinoyhub.js",
+      "enabled": true,
+      "formats": [
+        "mp4",
+        "m3u8",
+        "mkv",
+        "webm"
+      ],
+      "contentLanguage": [
+        "tl",
+        "fil",
+        "en"
+      ]
+    },
+    {
+      "id": "animotvslash",
+      "name": "ANIMOTVSLASH",
+      "description": "Anime streams from animotvslash.org",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/animotvslash.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ja"
+      ]
+    },
+    {
+      "id": "animepahe",
+      "name": "AnimePahe",
+      "description": "AnimePahe Sub/Dub streams",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/animepahe.js",
+      "enabled": true,
+      "formats": [
+        "m3u8"
+      ],
+      "contentLanguage": [
+        "en",
+        "ja"
+      ]
+    },
+    {
+      "id": "cinemacity",
+      "name": "CinemaCity",
+      "description": "CinemaCity streams",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/cinemacity.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ja"
+      ]
+    },
+    {
+      "id": "4khdhub",
+      "name": "4KHDHub",
+      "description": "4K/1080p/720p Movies & TV from 4KHDHub",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/4khdhub.js",
+      "enabled": true,
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ta",
+        "te",
+        "tl"
+      ]
+    },
+    {
+      "id": "kisskh",
+      "name": "KissKH",
+      "description": "Korean dramas and Asian TV shows from KissKH",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/kisskh.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ko",
+        "ja",
+        "zh"
+      ]
+    },
+    {
+      "id": "okru",
+      "name": "OK.ru",
+      "description": "OK.ru video streams",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/okru.js",
+      "enabled": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "contentLanguage": [
+        "ru",
+        "en"
+      ]
+    },
+    {
+      "id": "castle",
+      "name": "Castle",
+      "description": "Castle streaming provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/castle.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "dooflix",
+      "name": "DooFlix",
+      "description": "DooFlix streaming provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/dooflix.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "dvdplay",
+      "name": "DVDPlay",
+      "description": "DVDPlay streaming provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/dvdplay.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "hdhub4u",
+      "name": "HDHub4u",
+      "description": "HDHub4u provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/hdhub4u.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4",
+        "mkv"
+      ],
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "mallumv",
+      "name": "MallumV",
+      "description": "MallumV provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/mallumv.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ml"
+      ]
+    },
+    {
+      "id": "movieblast",
+      "name": "MovieBlast",
+      "description": "MovieBlast provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/movieblast.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "mycima",
+      "name": "MyCima",
+      "description": "MyCima provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/mycima.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en",
+        "ar"
+      ]
+    },
+    {
+      "id": "netmirror",
+      "name": "NetMirror",
+      "description": "NetMirror provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/netmirror.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "myflixer",
+      "name": "MyFlixer",
+      "description": "NVV-compatible provider",
+      "version": "4.0.0",
+      "author": "xrexzerox",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/myflixer-extractor.js",
+      "enabled": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "contentLanguage": [
+        "en"
+      ]
+    }
   ]
 }
