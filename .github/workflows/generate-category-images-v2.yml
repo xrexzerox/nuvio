@@ -1,0 +1,32 @@
+name: Generate category images v2
+
+on:
+  push:
+    paths:
+      - 'tools/generate_category_images_v2.py'
+      - '.github/workflows/generate-category-images-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install Pillow
+        run: python -m pip install pillow
+      - name: Generate JPG images
+        run: python tools/generate_category_images_v2.py
+      - name: Commit JPG images
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add netflix.jpg hbo.jpg prime.jpg appletv.jpg anime.jpg horror.jpg drama.jpg korean.jpg kids.jpg
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add Netflix HBO Prime AppleTV Anime Horror Drama Korean Kids images'
+          git push
