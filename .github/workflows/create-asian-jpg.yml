@@ -2,6 +2,9 @@ name: Create Asian JPG
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/create-asian-jpg.yml'
 
 permissions:
   contents: write
