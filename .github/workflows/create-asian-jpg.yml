@@ -1,0 +1,42 @@
+name: Create Asian JPG
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate asian.jpg
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageDraw, ImageFont
+          import random
+          W,H=1280,720
+          im=Image.new('RGB',(W,H),(7,7,7))
+          d=ImageDraw.Draw(im)
+          font_path='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+          font=ImageFont.truetype(font_path,190)
+          text='ASIAN'
+          box=d.textbbox((0,0),text,font=font,stroke_width=2)
+          tw,th=box[2]-box[0],box[3]-box[1]
+          x=(W-tw)//2; y=(H-th)//2-20
+          d.text((x,y),text,font=font,fill=(225,225,225),stroke_width=2,stroke_fill=(20,20,20))
+          random.seed(7)
+          for _ in range(6500):
+              px=random.randrange(W); py=random.randrange(H)
+              if random.random()<0.68:
+                  d.point((px,py),fill=(random.randrange(35,130),)*3)
+          im.save('asian.jpg','JPEG',quality=92,optimize=True,progressive=True)
+          PY
+      - name: Commit asian.jpg
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add asian.jpg
+          git commit -m 'Add asian.jpg' || exit 0
+          git push
